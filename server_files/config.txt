@@ -1,0 +1,8 @@
+userfile##/home/navyug/RubymineProjects/Web_server/server_files/user.txt
+port##10003
+logfile##/home/navyug/RubymineProjects/Web_server/server_files/log.txt
+headerfile##/home/navyug/RubymineProjects/Web_server/server_files/header.txt
+
+
+
+ 
