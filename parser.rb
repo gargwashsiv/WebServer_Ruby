@@ -1,3 +1,5 @@
+#Function to parse the HTTP Request 
+#This function return the array having username and password
 def process_data(request)
   request_lines = request.split("\n")
   size = request_lines.length
