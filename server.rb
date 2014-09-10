@@ -54,6 +54,9 @@ server = TCPServer.new('localhost',10001)
 loop do
   socket = server.accept
   request_body = socket.recv(1024)
+  config_path = find_config()
+  logfile = get_data_from_config(config_path,"logfile")
+  write_to_file(logfile.chop!,request_body)
   request_lines = request_body.split("\n")
   first_line = request_lines[0].split(" ")
   if first_line[0]=="GET"
@@ -69,9 +72,13 @@ loop do
        dataname = get_data_from_config(config_path,"userfile")
        data = file_auth(dataname.chop!,userinfo[0],userinfo[1])
        if data
-           write_on_socket("/home/navyug/RubymineProjects/Web_server/server_files/success.html",file_content_type,socket)
+           parent_path = Dir.pwd
+           success_file = parent_path+"/"+"server_files/success.html"
+           write_on_socket(success_file,file_content_type,socket)
        else
-          write_on_socket("/home/navyug/RubymineProjects/Web_server/server_files/failure.html",file_content_type,socket)
+           parent_path = Dir.pwd
+          failure_file = parent_path+"/"+"server_files/failure.html"
+          write_on_socket(failure_file,file_content_type,socket)
        end
     end
   else
