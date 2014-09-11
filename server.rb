@@ -69,7 +69,8 @@ loop do
   elsif first_line[0]=="POST"
      method_name = first_line[1][1..-1]
     if method_name =="process_data"
-        sleep(10)
+        #You can make the post request wait to test for multithreading in application in this 10 sec,you can send many get request to check if they are being served or not/
+        #sleep(10)
         logfile = get_data_from_config(config_path,"logfile")
         write_to_file(logfile.chop!,request_body)
         userinfo = process_data(request_body)
