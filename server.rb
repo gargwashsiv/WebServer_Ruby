@@ -1,5 +1,6 @@
 require 'socket'
 require 'uri'
+require 'thread'
 load 'parser.rb'
 load 'file_handling.rb'
 
@@ -52,37 +53,42 @@ end
 #Opening a server at the localhost and a particular port number
 server = TCPServer.new('localhost',10001)
 loop do
-  socket = server.accept
-  request_body = socket.recv(1024)
-  config_path = find_config()
-  logfile = get_data_from_config(config_path,"logfile")
-  write_to_file(logfile.chop!,request_body)
-  request_lines = request_body.split("\n")
-  first_line = request_lines[0].split(" ")
+  #Multiple client request will be handle using threading
+  Thread.start(server.accept) do |socket|
+   request_body = socket.recv(1024)
+   config_path = find_config()
+   request_lines = request_body.split("\n")
+   first_line = request_lines[0].split(" ")
   if first_line[0]=="GET"
-    file_name = parse_request(request_lines[0])
-    parent_path = Dir.pwd
-    file_path = parent_path+"/"+"server_files"+file_name
-    write_on_socket(file_path,file_content_type,socket)
+    logfile = get_data_from_config(config_path,"logfile")
+    write_to_file(logfile.chop!,request_body)
+     file_name = parse_request(request_lines[0])
+     parent_path = Dir.pwd
+     file_path = parent_path+"/"+"server_files"+file_name
+     write_on_socket(file_path,file_content_type,socket)
   elsif first_line[0]=="POST"
-    method_name = first_line[1][1..-1]
+     method_name = first_line[1][1..-1]
     if method_name =="process_data"
-       userinfo = process_data(request_body)
-       config_path = find_config()
-       dataname = get_data_from_config(config_path,"userfile")
-       data = file_auth(dataname.chop!,userinfo[0],userinfo[1])
+        sleep(10)
+        logfile = get_data_from_config(config_path,"logfile")
+        write_to_file(logfile.chop!,request_body)
+        userinfo = process_data(request_body)
+        config_path = find_config()
+        dataname = get_data_from_config(config_path,"userfile")
+        data = file_auth(dataname.chop!,userinfo[0],userinfo[1])
        if data
            parent_path = Dir.pwd
            success_file = parent_path+"/"+"server_files/success.html"
            write_on_socket(success_file,file_content_type,socket)
        else
            parent_path = Dir.pwd
-          failure_file = parent_path+"/"+"server_files/failure.html"
-          write_on_socket(failure_file,file_content_type,socket)
+           failure_file = parent_path+"/"+"server_files/failure.html"
+           write_on_socket(failure_file,file_content_type,socket)
        end
     end
   else
     puts "Unknown request type"
   end
-end
-socket.close
+  socket.close
+  end
+  end
